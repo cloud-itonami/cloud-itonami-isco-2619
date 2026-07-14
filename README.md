@@ -4,6 +4,29 @@ Open Occupation Blueprint for **ISCO-08 2619**: Legal Professionals Not Elsewher
 
 This repository designs a forkable OSS business for an independent legal support and compliance practice: a document notarization and certification-support robot handles physical stamping and binding under a governor-gated actor, so the practice keeps its own certification records instead of renting a closed compliance SaaS.
 
+**Maturity: `:implemented`.** `src/legalcompliance/` implements the
+`LegalComplianceActor` as a `langgraph.graph/state-graph`
+(`legalcompliance.actor`) wired to a `Compliance Advisor` (`legalcompliance.advisor`)
+and an independent `LegalComplianceGovernor` (`legalcompliance.governor`),
+following the itonami actor pattern (ADR-2607011000): `:intake -> :advise
+-> :govern -> :decide -+-> :commit (:ok?) +-> :request-approval (:escalate?,
+human-in-the-loop interrupt) +-> :hold (:hard?)`. 14 tests / 29 assertions
+green (`clojure -M:test`). HARD invariants (always hold, never
+overridable): client provenance, no-actuation (`:effect` must be
+`:propose`), a registered document basis for any certification
+proposal, the proposed certified-copy count not exceeding the
+document's registered authorized quantity (issuing more certified
+copies than authorized is unregulated duplication, not efficient
+service), and verified identity before any certification can be
+committed (certifying a document without verified identity is a
+notarization fraud risk, not efficient service). Always-escalate ops
+(human sign-off regardless of confidence, mapping this repo's Trust
+Controls in [`docs/business-model.md`](docs/business-model.md)):
+`:approve-certification-issuance` (no notarization or certification
+issuance without the governor gate) and `:approve-regulatory-filing`
+(submitting a regulatory filing on the client's behalf always requires
+human sign-off).
+
 ## Robotics premise
 
 All cloud-itonami verticals are designed on the premise that a **robot performs
