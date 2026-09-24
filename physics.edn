@@ -1,0 +1,33 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:physics` runs it.
+;;
+;; README "Robotics premise": a document notarization and certification-support
+;; robot performs physical stamping, seal application and certified-copy
+;; binding (ISCO 2619, legal professionals n.e.c.). Its physical work: moving
+;; the desk embossing seal press between documents, and delivering bound
+;; certified copies from the binding station to the release counter.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+;; Replacing an estimate with a sourced value is this bot's growth work.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isco-2619"
+ :cases
+ [{:id :seal-press-between-documents
+   :kind :manipulator
+   :procedure "arm moves the desk embossing seal press from its stand to the next document on the signing table, at the pace of the certification queue"
+   :params {:l1-m 0.40 :l2-m 0.35 :m1-kg 3.0 :m2-kg 2.0 :payload-kg 2.5
+            :from [0.45 0.10] :to [0.15 0.50] :steps 500}
+   :sweep {:param :duration-s :values [0.4 0.6 0.9 1.3 2.0]}
+   :quantity :peak-tau1-nm
+   :limit {:max 40.0 :basis "estimate: continuous shoulder torque of a light collaborative arm (~3 kg class)"}
+   :boundary {:lo 0.2 :hi 3.0}}
+  {:id :certified-copies-to-counter
+   :kind :transport
+   :procedure "AMR carries bundles of bound certified copies from the binding station to the release counter"
+   :params {:mass-kg 30.0 :payload-kg 10.0 :v-max-mps 0.8 :a-max-mps2 0.4
+            :brake-decel-mps2 0.6 :drive-force-n 50.0 :crr 0.02
+            :cog-height-m 0.50 :support-half-length-m 0.22}
+   :sweep {:param :distance-m :values [8.0 15.0 25.0 40.0 60.0]}
+   :quantity :cycle-time-s
+   :limit {:max 35.0 :basis "estimate: certified copies should reach the counter within 35 s of release approval"}
+   :boundary {:lo 2.0 :hi 150.0}}]}
